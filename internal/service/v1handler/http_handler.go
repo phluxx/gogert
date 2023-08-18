@@ -9,6 +9,7 @@ import (
 	"github.com/phluxx/gogert/internal/service/config"
 	"github.com/phluxx/gogert/pkg/v1model"
 	"github.com/phluxx/gogert/pkg/v1request"
+	"github.com/phluxx/gogert/pkg/v1view"
 )
 
 type HttpHandler struct {
@@ -133,6 +134,16 @@ func (h *HttpHandler) login(w http.ResponseWriter, r *http.Request, _ httprouter
 		w.Write([]byte(err.Error()))
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(token))
+
+	// Marshal the response struct into json
+	response := v1view.LoginResponse{
+		Token: token,
+	}
+	w.Header().Add("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
 }
