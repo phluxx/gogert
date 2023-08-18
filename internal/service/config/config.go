@@ -7,6 +7,7 @@ import (
 type Config struct {
 	HttpConfig
 	LdapConfig
+	JwtConfig
 }
 
 type HttpConfig struct {
@@ -21,6 +22,11 @@ type LdapConfig struct {
 	LdapBase string `envconfig:"LDAP_BASE" default:"dc=ewnix,dc=net"`
 	LdapBind string `envconfig:"LDAP_BIND" default:"cn=admin,dc=ewnix,dc=net"`
 	LdapPass string `envconfig:"LDAP_PASS" default:"password"`
+}
+
+type JwtConfig struct {
+	// JWT
+	Secret string `envconfig:"JWT_SECRET" default:"fellysmart"`
 }
 
 func LoadConfig() (*Config, error) {

@@ -26,6 +26,7 @@ func NewHttpHandler(cfg *config.Config) *HttpHandler {
 func (h *HttpHandler) RegisterHandler() {
 	h.Router.GET("/health", h.healthCheck)
 	h.Router.POST("/v1/password/change", h.passwordChange)
+	h.Router.POST("/v1/auth/login", h.login)
 }
 
 func (h *HttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -93,9 +94,45 @@ func (h *HttpHandler) passwordChange(w http.ResponseWriter, r *http.Request, _ h
 
 func (h *HttpHandler) getClaims(r *http.Request) (*v1model.Claims, error) {
 	auth := r.Header.Get("Authorization")
-	claims, err := v1model.GetClaims(auth)
+	claims, err := v1model.GetClaims(auth, h.Config.JwtConfig)
 	if err != nil {
 		return nil, err
 	}
 	return claims, nil
+}
+
+func (h *HttpHandler) login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	var (
+		login v1request.LoginRequest
+		dec   = json.NewDecoder(r.Body)
+	)
+	// Unmarshal the request body into the login struct
+	err := dec.Decode(&login)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	c, err := ldap.New(&h.Config.LdapConfig)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	// Authenticate the user against the ldap server
+	err = c.Authenticate(login.Username, login.Password)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	// Create the jwt token
+	token, err := v1model.CreateToken(login.Username, h.Config.JwtConfig)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(token))
 }
