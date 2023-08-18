@@ -15,5 +15,5 @@ func CreateToken(username string, cfg config.JwtConfig) (string, error) {
 	})
 
 	// Sign and get the complete encoded token as a string using the secret
-	return token.SignedString(cfg.Secret)
+	return token.SignedString([]byte(cfg.Secret))
 }
