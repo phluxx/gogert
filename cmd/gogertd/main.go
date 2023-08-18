@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/phluxx/gogert/internal/service/config"
@@ -15,5 +16,5 @@ func main() {
 	}
 	h := v1handler.NewHttpHandler(cfg)
 	h.RegisterHandler()
-	http.ListenAndServe(":8080", h)
+	http.ListenAndServe(fmt.Sprintf(":%s", cfg.HttpPort), h)
 }
