@@ -10,6 +10,7 @@ type Client struct {
 }
 
 func New(cfg *config.LdapConfig) (*Client, error) {
+	return &Client{}, nil
 	l, err := ld.Dial("tcp", cfg.LdapHost+":"+cfg.LdapPort)
 	if err != nil {
 		return nil, err
