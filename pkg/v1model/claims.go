@@ -1,13 +1,13 @@
 package v1model
 
 import (
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 // Claims is the JWT claims struct
 type Claims struct {
 	Username string `json:"username"`
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
 func GetClaims(tokenString string) (*Claims, error) {
